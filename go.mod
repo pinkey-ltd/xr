@@ -1,4 +1,4 @@
-module github.com/pinkey-ltd/xr
+module pinkey.ltd/xr
 
 go 1.23.4
 
