@@ -2,8 +2,8 @@
 // that all float vector and matrix types implement.
 package go3d
 
-// M is an interface that all float64 vector and matrix types implement.
-type M[T float64 | float32] interface {
+// T is an interface that all float64 vector and matrix types implement.
+type T[E float64 | float32] interface {
 
 	// Cols returns the number of columns of the vector or matrix.
 	Cols() int
@@ -15,10 +15,10 @@ type M[T float64 | float32] interface {
 	Size() int
 
 	// Slice returns the elements of the vector or matrix as slice.
-	Slice() []T
+	Slice() []E
 
 	// Get returns one element of the vector or matrix.
-	Get(row, col int) T
+	Get(row, col int) E
 
 	// IsZero checks if all elements of the vector or matrix are zero.
 	IsZero() bool
