@@ -8,6 +8,24 @@ import (
 	"pinkey.ltd/xr/pkg/go3d"
 )
 
+// var (
+//
+//	// Zero holds a zero vector.
+//	Zero = Vec{}
+//
+//	// UnitX holds a vector with X set to one.
+//	UnitX = Vec{1, 0}
+//	// UnitY holds a vector with Y set to one.
+//	UnitY = Vec{0, 1}
+//	// UnitXY holds a vector with X and Y set to one.
+//	UnitXY = Vec{1, 1}
+//
+//	// MinVal holds a vector with the smallest possible component values.
+//	MinVal = Vec{-math.MaxFloat64, -math.MaxFloat64}
+//	// MaxVal holds a vector with the highest possible component values.
+//	MaxVal = Vec{+math.MaxFloat64, +math.MaxFloat64}
+//
+// )
 // Vec represents a 2D vector.
 type Vec[T float64 | float32] [2]T
 
