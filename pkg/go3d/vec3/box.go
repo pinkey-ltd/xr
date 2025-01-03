@@ -10,11 +10,11 @@ type Box[T float64 | float32] struct {
 	Max Vec[T]
 }
 
-//var (
-//	// MaxBox holds a box that contains the entire R3 space that can be represented as vec3
-//	MaxBox = Box{MinVal, MaxVal}
-//	MinBox = Box{MaxVal, MinVal}
-//)
+var (
+	// MaxBox holds a box that contains the entire R3 space that can be represented as vec3
+	MaxBox = Box[float64]{MinVal, MaxVal}
+	MinBox = Box[float64]{MaxVal, MinVal}
+)
 
 func FromSlice[T float64 | float32](s []T) *Box[T] {
 	return &Box[T]{Min: Vec[T]{s[0], s[1], s[2]}, Max: Vec[T]{s[3], s[4], s[5]}}

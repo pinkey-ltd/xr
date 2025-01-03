@@ -14,7 +14,7 @@ import (
 
 const GLTF_VERSION = "2.0"
 
-func MstToGltf(msts []*Mesh) (*gltf.Document, error) {
+func MstToGltf[T float64 | float32](msts []*Mesh[T]) (*gltf.Document, error) {
 	doc := CreateDoc()
 	for _, mst := range msts {
 		e := BuildGltf(doc, mst, false, true)
@@ -97,7 +97,7 @@ func GetGltfBinary(doc *gltf.Document, paddingUnit int) ([]byte, error) {
 	return w.Bytes(), nil
 }
 
-func BuildGltf(doc *gltf.Document, mh *Mesh, exportOutline, gpu_instance bool) error {
+func BuildGltf[T float64 | float32](doc *gltf.Document, mh *Mesh[T], exportOutline, gpu_instance bool) error {
 	err := buildGltf(doc, &mh.BaseMesh, nil, exportOutline, gpu_instance)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func buildMeshBuffer(ctx *buildContext, buffer *gltf.Buffer, bufferViews []*gltf
 	return bufferViews
 }
 
-func buildOutlineBuffer(ctx *buildContext, buffer *gltf.Buffer, bufferViews []*gltf.BufferView, nd *MeshNode) []*gltf.BufferView {
+func buildOutlineBuffer[T float64 | float32](ctx *buildContext, buffer *gltf.Buffer, bufferViews []*gltf.BufferView, nd *MeshNode[T]) []*gltf.BufferView {
 	var bt []byte
 	buf := bytes.NewBuffer(bt)
 	ctx.bvIndex = len(bufferViews)
@@ -196,7 +196,7 @@ func buildOutlineBuffer(ctx *buildContext, buffer *gltf.Buffer, bufferViews []*g
 	return bufferViews
 }
 
-func buildOutline(ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode) (*gltf.Mesh, []*gltf.Accessor) {
+func buildOutline[T float64 | float32](ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode[T]) (*gltf.Mesh, []*gltf.Accessor) {
 	mesh := &gltf.Mesh{}
 	aftIndices := len(nd.EdgeGroup)
 	idx := len(accessors)
@@ -329,7 +329,7 @@ func buildMesh(ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode) (*gl
 	return mesh, accessors
 }
 
-func buildGltf(doc *gltf.Document, mh *BaseMesh, trans []*mat4d.T, exportOutline bool, gpu_instance bool) error {
+func buildGltf[T float64 | float32](doc *gltf.Document, mh *BaseMesh[T], trans []*mat4d.T, exportOutline bool, gpu_instance bool) error {
 	ctx := &buildContext{}
 	ctx.mtlSize = len(doc.Materials)
 

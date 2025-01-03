@@ -8,35 +8,35 @@ import (
 	"pinkey.ltd/xr/pkg/go3d"
 )
 
-//var (
-//	// Zero holds a zero vector.
-//	Zero = Vec[float64]{}
-//
-//	// UnitX holds a vector with X set to one.
-//	UnitX = Vec{1, 0, 0}
-//	// UnitY holds a vector with Y set to one.
-//	UnitY = Vec{0, 1, 0}
-//	// UnitZ holds a vector with Z set to one.
-//	UnitZ = Vec{0, 0, 1}
-//	// UnitXYZ holds a vector with X, Y, Z set to one.
-//	UnitXYZ = Vec{1, 1, 1}
-//
-//	// Red holds the color red.
-//	Red = Vec{1, 0, 0}
-//	// Green holds the color green.
-//	Green = Vec{0, 1, 0}
-//	// Blue holds the color black.
-//	Blue = Vec{0, 0, 1}
-//	// Black holds the color black.
-//	Black = Vec{0, 0, 0}
-//	// White holds the color white.
-//	White = Vec{1, 1, 1}
-//
-//	// MinVal holds a vector with the smallest possible component values.
-//	MinVal = Vec{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
-//	// MaxVal holds a vector with the highest possible component values.
-//	MaxVal = Vec{+math.MaxFloat64, +math.MaxFloat64, +math.MaxFloat64}
-//)
+var (
+	//	// Zero holds a zero vector.
+	//	Zero = Vec[float64]{}
+	//
+	//	// UnitX holds a vector with X set to one.
+	//	UnitX = Vec{1, 0, 0}
+	//	// UnitY holds a vector with Y set to one.
+	//	UnitY = Vec{0, 1, 0}
+	//	// UnitZ holds a vector with Z set to one.
+	//	UnitZ = Vec{0, 0, 1}
+	//	// UnitXYZ holds a vector with X, Y, Z set to one.
+	//	UnitXYZ = Vec{1, 1, 1}
+	//
+	//	// Red holds the color red.
+	//	Red = Vec{1, 0, 0}
+	//	// Green holds the color green.
+	//	Green = Vec{0, 1, 0}
+	//	// Blue holds the color black.
+	//	Blue = Vec{0, 0, 1}
+	//	// Black holds the color black.
+	//	Black = Vec{0, 0, 0}
+	//	// White holds the color white.
+	//	White = Vec{1, 1, 1}
+	//
+	// MinVal holds a vector with the smallest possible component values.
+	MinVal = Vec[float64]{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
+	// MaxVal holds a vector with the highest possible component values.
+	MaxVal = Vec[float64]{+math.MaxFloat64, +math.MaxFloat64, +math.MaxFloat64}
+)
 
 // Vec represents a 3D vector.
 type Vec[T float64 | float32] [3]T
