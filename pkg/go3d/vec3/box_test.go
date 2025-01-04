@@ -1,8 +1,10 @@
 package vec3
 
 import (
-	"github.com/stretchr/testify/assert"
+	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBoxString(t *testing.T) {
@@ -117,6 +119,160 @@ func TestBoxIntersects(t *testing.T) {
 
 	assert.True(t, boxA.Intersects(&boxB), "Boxes A and B should intersect")
 	assert.True(t, !boxA.Intersects(&boxC), "Boxes A and C should not intersect")
+}
+
+func TestFromSlice(t *testing.T) {
+	slice := []float64{1, 2, 3, 4, 5, 6}
+	box := FromSlice(slice)
+
+	expected := Box[float64]{
+		Min: Vec[float64]{1, 2, 3},
+		Max: Vec[float64]{4, 5, 6},
+	}
+	assert.Equal(t, expected, *box)
+}
+
+func TestParseBox(t *testing.T) {
+	s := "1 2 3 4 5 6"
+	box, err := ParseBox[float64](s)
+
+	assert.NoError(t, err)
+	expected := Box[float64]{
+		Min: Vec[float64]{1, 2, 3},
+		Max: Vec[float64]{4, 5, 6},
+	}
+	assert.Equal(t, expected, box)
+}
+
+func TestJoin(t *testing.T) {
+	boxA := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{1, 1, 1},
+	}
+	boxB := Box[float64]{
+		Min: Vec[float64]{2, 2, 2},
+		Max: Vec[float64]{3, 3, 3},
+	}
+	boxA.Join(&boxB)
+
+	expected := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{3, 3, 3},
+	}
+	assert.Equal(t, expected, boxA)
+}
+
+func TestJoined(t *testing.T) {
+	boxA := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{1, 1, 1},
+	}
+	boxB := Box[float64]{
+		Min: Vec[float64]{2, 2, 2},
+		Max: Vec[float64]{3, 3, 3},
+	}
+	joined := Joined(&boxA, &boxB)
+
+	expected := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{3, 3, 3},
+	}
+	assert.Equal(t, expected, joined)
+}
+
+func TestExtend(t *testing.T) {
+	box := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{1, 1, 1},
+	}
+	point := Vec[float64]{2, 2, 2}
+	box.Extend(&point)
+
+	expected := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{2, 2, 2},
+	}
+	assert.Equal(t, expected, box)
+}
+
+func TestIntersectsBoundary(t *testing.T) {
+	boxA := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{1, 1, 1},
+	}
+	boxB := Box[float64]{
+		Min: Vec[float64]{1, 1, 1},
+		Max: Vec[float64]{2, 2, 2},
+	}
+	boxC := Box[float64]{
+		Min: Vec[float64]{1.1, 1.1, 1.1},
+		Max: Vec[float64]{2, 2, 2},
+	}
+
+	assert.True(t, boxA.Intersects(&boxB), "Boxes A and B should intersect at boundary")
+	assert.False(t, boxA.Intersects(&boxC), "Boxes A and C should not intersect")
+}
+
+func TestDiagonal(t *testing.T) {
+	box := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{2, 2, 2},
+	}
+
+	expected := Vec[float64]{2, 2, 2}
+	assert.Equal(t, expected, box.Diagonal())
+}
+
+func TestCenter(t *testing.T) {
+	box := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{2, 2, 2},
+	}
+
+	expected := Vec[float64]{1, 1, 1}
+	assert.Equal(t, expected, box.Center())
+}
+
+func TestContainsBoundary(t *testing.T) {
+	boxA := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{2, 2, 2},
+	}
+	boxB := Box[float64]{
+		Min: Vec[float64]{1, 1, 1},
+		Max: Vec[float64]{2, 2, 2},
+	}
+	boxC := Box[float64]{
+		Min: Vec[float64]{2, 2, 2},
+		Max: Vec[float64]{3, 3, 3},
+	}
+
+	assert.True(t, boxA.Contains(&boxB), "Box A should contain Box B")
+	assert.False(t, boxA.Contains(&boxC), "Box A should not contain Box C")
+}
+
+func TestContainsPointBoundary(t *testing.T) {
+	box := Box[float64]{
+		Min: Vec[float64]{0, 0, 0},
+		Max: Vec[float64]{2, 2, 2},
+	}
+	pointInside := Vec[float64]{1, 1, 1}
+	pointBoundary := Vec[float64]{2, 2, 2}
+	pointOutside := Vec[float64]{3, 3, 3}
+
+	assert.True(t, box.ContainsPoint(&pointInside), "Point inside should be contained")
+	assert.True(t, box.ContainsPoint(&pointBoundary), "Point on boundary should be contained")
+	assert.False(t, box.ContainsPoint(&pointOutside), "Point outside should not be contained")
+}
+
+func TestMaxBox(t *testing.T) {
+	point := Vec[float64]{math.MaxFloat64, math.MaxFloat64, math.MaxFloat64}
+	assert.True(t, MaxBox.ContainsPoint(&point), "MaxBox should contain the maximum point")
+}
+
+func TestMinBox(t *testing.T) {
+	point := Vec[float64]{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
+	assert.True(t, MinBox.ContainsPoint(&point), "MinBox should contain the minimum point")
 }
 
 // Helper functions for testing
