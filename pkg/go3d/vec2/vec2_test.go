@@ -294,6 +294,140 @@ func TestParse(t *testing.T) {
 	assert.Equal(t, Vec[float64]{3.14, 2.71}, vec)
 }
 
+func TestPracticallyEquals(t *testing.T) {
+	vec1 := Vec[float64]{1.0, 2.0}
+	vec2 := Vec[float64]{1.0000001, 2.0000001}
+	vec3 := Vec[float64]{1.1, 2.1}
+
+	assert.True(t, vec1.PracticallyEquals(&vec2, 1e-6), "Vectors should be practically equal")
+	assert.False(t, vec1.PracticallyEquals(&vec3, 1e-6), "Vectors should not be practically equal")
+}
+
+func TestPracticallyEqualsStatic(t *testing.T) {
+	assert.True(t, PracticallyEquals(1.0, 1.0000001, 1e-6), "Values should be practically equal")
+	assert.False(t, PracticallyEquals(1.0, 1.1, 1e-6), "Values should not be practically equal")
+}
+
+func TestRotate90DegLeft(t *testing.T) {
+	vec := Vec[float64]{1, 0}
+	vec.Rotate90DegLeft()
+
+	expected := Vec[float64]{0, 1}
+	assert.Equal(t, expected, vec)
+}
+
+func TestRotate90DegRight(t *testing.T) {
+	vec := Vec[float64]{1, 0}
+	vec.Rotate90DegRight()
+
+	expected := Vec[float64]{0, -1}
+	assert.Equal(t, expected, vec)
+}
+
+func TestCross(t *testing.T) {
+	vecA := Vec[float64]{1, 0}
+	vecB := Vec[float64]{0, 1}
+	cross := Cross(&vecA, &vecB)
+
+	expected := Vec[float64]{0, 0}
+	assert.Equal(t, expected, cross)
+}
+
+func TestCrossScalar(t *testing.T) {
+	vecA := Vec[float64]{1, 0}
+	vecB := Vec[float64]{0, 1}
+	cross := cross(&vecA, &vecB)
+
+	expected := float64(1)
+	assert.Equal(t, expected, cross)
+}
+
+func TestAngleFunction(t *testing.T) {
+	vecA := Vec[float64]{1, 0}
+	vecB := Vec[float64]{0, 1}
+	angle := angle(&vecA, &vecB)
+
+	expected := math.Pi / 2
+	assert.InDelta(t, expected, float64(angle), 1e-8)
+}
+
+func TestIsLeftWinding(t *testing.T) {
+	vecA := Vec[float64]{1, 0}
+	vecB := Vec[float64]{0, 1}
+	assert.True(t, IsLeftWinding(&vecA, &vecB), "Angle from A to B should be left winding")
+
+	vecC := Vec[float64]{0, 1}
+	vecD := Vec[float64]{1, 0}
+	assert.False(t, IsLeftWinding(&vecC, &vecD), "Angle from C to D should not be left winding")
+}
+
+func TestIsRightWinding(t *testing.T) {
+	vecA := Vec[float64]{1, 0}
+	vecB := Vec[float64]{0, 1}
+	assert.False(t, IsRightWinding(&vecA, &vecB), "Angle from A to B should not be right winding")
+
+	vecC := Vec[float64]{0, 1}
+	vecD := Vec[float64]{1, 0}
+	assert.True(t, IsRightWinding(&vecC, &vecD), "Angle from C to D should be right winding")
+}
+
+func TestPointSegmentDistance(t *testing.T) {
+	p1 := Vec[float64]{1, 1}
+	x1 := Vec[float64]{0, 0}
+	x2 := Vec[float64]{2, 0}
+	distance := PointSegmentDistance(&p1, &x1, &x2)
+
+	expected := float64(1)
+	assert.InDelta(t, expected, distance, 1e-8)
+}
+
+func TestPointSegmentVerticalPoint(t *testing.T) {
+	p1 := Vec[float64]{1, 1}
+	x1 := Vec[float64]{0, 0}
+	x2 := Vec[float64]{2, 0}
+	verticalPoint := PointSegmentVerticalPoint(&p1, &x1, &x2)
+
+	expected := Vec[float64]{1, 0}
+	assert.Equal(t, expected, *verticalPoint)
+}
+
+func TestInterpolate(t *testing.T) {
+	vecA := Vec[float64]{1, 2}
+	vecB := Vec[float64]{3, 4}
+	interpolated := Interpolate(&vecA, &vecB, 0.5)
+
+	expected := Vec[float64]{2, 3}
+	assert.Equal(t, expected, interpolated)
+}
+
+func TestClamp(t *testing.T) {
+	vec := Vec[float64]{-1, 3}
+	min := Vec[float64]{0, 0}
+	max := Vec[float64]{2, 4}
+	clampedVec := vec.Clone().Clamp(&min, &max)
+
+	expected := Vec[float64]{0, 3}
+	assert.Equal(t, expected, *clampedVec)
+}
+
+func TestClamped(t *testing.T) {
+	vec := Vec[float64]{-1, 3}
+	min := Vec[float64]{0, 0}
+	max := Vec[float64]{2, 4}
+	clampedVec := vec.Clamped(&min, &max)
+
+	expected := Vec[float64]{0, 3}
+	assert.Equal(t, expected, clampedVec)
+}
+
+func TestClamped01(t *testing.T) {
+	vec := Vec[float64]{-1, 2}
+	clampedVec := vec.Clamped01()
+
+	expected := Vec[float64]{0, 1}
+	assert.Equal(t, expected, clampedVec)
+}
+
 // clampDecimals clamps a floating-point number to a specified number of decimal places by rounding.
 // It takes a value and the number of decimals to retain, then rounds the input to that decimal precision.
 func clampDecimals[T float64 | float32](decimalValue T, amountDecimals T) T {
