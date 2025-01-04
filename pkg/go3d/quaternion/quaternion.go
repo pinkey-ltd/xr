@@ -4,9 +4,9 @@ package quaternion
 import (
 	"fmt"
 	"math"
-	"pinkey.ltd/xr/pkg/go3d/vec4"
 
 	"pinkey.ltd/xr/pkg/go3d/vec3"
+	"pinkey.ltd/xr/pkg/go3d/vec4"
 )
 
 // H represents a orientatin/rotation as a unit quaternion.

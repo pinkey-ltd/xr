@@ -2,11 +2,12 @@ package quaternion
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"math"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 	"pinkey.ltd/xr/pkg/go3d/vec3"
 	"pinkey.ltd/xr/pkg/go3d/vec4"
-	"testing"
 )
 
 func TestVec4(t *testing.T) {
@@ -46,6 +47,140 @@ func TestAxisAngle(t *testing.T) {
 		assert.Equal(t, tc.axis, axis)
 		assert.InDelta(t, tc.angle, angle, 1e-9)
 	}
+}
+
+func TestFromAxisAngle(t *testing.T) {
+	axis := &vec3.Vec[float64]{1, 0, 0}
+	angle := math.Pi / 2
+	q := FromAxisAngle(axis, angle)
+
+	expected := H[float64]{math.Sqrt(2) / 2, 0, 0, math.Sqrt(2) / 2}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestFromXAxisAngle(t *testing.T) {
+	angle := math.Pi / 2
+	q := FromXAxisAngle[float64](angle)
+
+	expected := H[float64]{math.Sqrt(2) / 2, 0, 0, math.Sqrt(2) / 2}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestFromYAxisAngle(t *testing.T) {
+	angle := math.Pi / 2
+	q := FromYAxisAngle[float64](angle)
+
+	expected := H[float64]{0, math.Sqrt(2) / 2, 0, math.Sqrt(2) / 2}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestFromZAxisAngle(t *testing.T) {
+	angle := math.Pi / 2
+	q := FromZAxisAngle[float64](angle)
+
+	expected := H[float64]{0, 0, math.Sqrt(2) / 2, math.Sqrt(2) / 2}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestFromVec4(t *testing.T) {
+	v := &vec4.Vec[float64]{1, 2, 3, 4}
+	q := FromVec4(v)
+
+	expected := H[float64]{1, 2, 3, 4}
+	assert.Equal(t, expected, q)
+}
+
+func TestMul(t *testing.T) {
+	q1 := H[float64]{1, 0, 0, 0}
+	q2 := H[float64]{0, 1, 0, 0}
+	q := Mul(&q1, &q2)
+
+	expected := H[float64]{0, 0, 1, 0}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestSlerp(t *testing.T) {
+	q1 := H[float64]{1, 0, 0, 0}
+	q2 := H[float64]{0, 1, 0, 0}
+	q := Slerp(&q1, &q2, 0.5)
+
+	expected := H[float64]{math.Sqrt(2) / 2, math.Sqrt(2) / 2, 0, 0}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestVec3Diff(t *testing.T) {
+	v1 := &vec3.Vec[float64]{1, 0, 0}
+	v2 := &vec3.Vec[float64]{0, 1, 0}
+	q := Vec3Diff(v1, v2)
+
+	expected := H[float64]{0, 0, math.Sqrt(2) / 2, math.Sqrt(2) / 2}
+	assert.InDelta(t, expected[0], q[0], 1e-9)
+	assert.InDelta(t, expected[1], q[1], 1e-9)
+	assert.InDelta(t, expected[2], q[2], 1e-9)
+	assert.InDelta(t, expected[3], q[3], 1e-9)
+}
+
+func TestIsUnitQuat(t *testing.T) {
+	q := H[float64]{math.Sqrt(2) / 2, math.Sqrt(2) / 2, 0, 0}
+	assert.True(t, q.IsUnitQuat(1e-9))
+
+	q2 := H[float64]{1, 2, 3, 4}
+	assert.False(t, q2.IsUnitQuat(1e-9))
+}
+
+func TestSetShortestRotation(t *testing.T) {
+	q1 := H[float64]{1, 0, 0, 0}
+	q2 := H[float64]{-1, 0, 0, 0}
+	q1.SetShortestRotation(&q2)
+
+	expected := H[float64]{1, 0, 0, 0}
+	assert.Equal(t, expected, q1)
+}
+
+func TestIsShortestRotation(t *testing.T) {
+	q1 := H[float64]{1, 0, 0, 0}
+	q2 := H[float64]{-1, 0, 0, 0}
+	assert.False(t, IsShortestRotation(&q1, &q2))
+
+	q3 := H[float64]{1, 0, 0, 0}
+	q4 := H[float64]{1, 0, 0, 0}
+	assert.True(t, IsShortestRotation(&q3, &q4))
+}
+
+func TestParse(t *testing.T) {
+	s := "1 2 3 4"
+	q, err := Parse[float64](s)
+	assert.NoError(t, err)
+	assert.Equal(t, H[float64]{1, 2, 3, 4}, q)
+}
+
+func TestRotatedVec3(t *testing.T) {
+	q := H[float64]{math.Sqrt(2) / 2, 0, 0, math.Sqrt(2) / 2}
+	v := &vec3.Vec[float64]{1, 0, 0}
+	rotated := q.RotatedVec3(v)
+
+	expected := vec3.Vec[float64]{1, 0, 0}
+	assert.InDelta(t, expected[0], rotated[0], 1e-9)
+	assert.InDelta(t, expected[1], rotated[1], 1e-9)
+	assert.InDelta(t, expected[2], rotated[2], 1e-9)
 }
 
 func TestNorm(t *testing.T) {
