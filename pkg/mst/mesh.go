@@ -16,10 +16,9 @@ import (
 	"os"
 	"path/filepath"
 
-	dmat "github.com/pinkey-ltd/go3d/float64/mat4"
-
 	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
+	"pinkey.ltd/xr/pkg/go3d/mat4"
 	"pinkey.ltd/xr/pkg/go3d/vec2"
 	"pinkey.ltd/xr/pkg/go3d/vec3"
 )
@@ -196,7 +195,7 @@ type MeshNode[T float64 | float32] struct {
 	Normals   []vec3.Vec[T]   `json:"normals,omitempty"`
 	Colors    [][3]byte       `json:"colors,omitempty"`
 	TexCoords []vec2.Vec[T]   `json:"texCoords,omitempty"`
-	Mat       *dmat.T         `json:"mat,omitempty"`
+	Mat       *mat4.Mat[T]    `json:"mat,omitempty"`
 	FaceGroup []*MeshTriangle `json:"faceGroup,omitempty"`
 	EdgeGroup []*MeshOutline  `json:"edgeGroup,omitempty"`
 }
@@ -273,7 +272,7 @@ func (n *MeshNode[T]) ReComputeNormal() {
 }
 
 type InstanceMesh[T float64 | float32] struct {
-	Transfors []*dmat.T
+	Transfors []*mat4.Mat[T]
 	Features  []uint64
 	BBox      *[6]float64
 	Mesh      *BaseMesh[T]
@@ -546,7 +545,7 @@ func MaterialUnMarshal[T float64 | float32](rd io.Reader, v uint32) MeshMaterial
 	case MESH_TRIANGLE_MATERIAL_TYPE_TEXTURE:
 		return TextureMaterialUnMarshal(rd)
 	case MESH_TRIANGLE_MATERIAL_TYPE_PBR:
-		return PbrMaterialUnMarshal(rd, v)
+		return PbrMaterialUnMarshal[T](rd, v)
 	case MESH_TRIANGLE_MATERIAL_TYPE_LAMBERT:
 		return LambertMaterialUnMarshal(rd)
 	case MESH_TRIANGLE_MATERIAL_TYPE_PHONG:
@@ -681,7 +680,7 @@ func MeshNodeUnMarshal[T float64 | float32](rd io.Reader) *MeshNode[T] {
 	var isMat uint8
 	readLittleByte(rd, &isMat)
 	if isMat == 1 {
-		nd.Mat = &dmat.T{}
+		nd.Mat = &mat4.Mat[T]{}
 		readLittleByte(rd, nd.Mat[0][:])
 		readLittleByte(rd, nd.Mat[1][:])
 		readLittleByte(rd, nd.Mat[2][:])
@@ -742,8 +741,8 @@ func MeshUnMarshal[T float64 | float32](rd io.Reader) *Mesh[T] {
 	sig := make([]byte, 4)
 	rd.Read(sig)
 	readLittleByte(rd, &ms.Version)
-	ms.BaseMesh = *baseMeshUnMarshal(rd, ms.Version)
-	ms.InstanceNode = MeshInstanceNodesUnMarshal(rd, ms.Version)
+	ms.BaseMesh = *baseMeshUnMarshal[T](rd, ms.Version)
+	ms.InstanceNode = MeshInstanceNodesUnMarshal[T](rd, ms.Version)
 	if ms.Version == V4 {
 		readLittleByte(rd, &ms.Code)
 	}
@@ -753,7 +752,7 @@ func MeshUnMarshal[T float64 | float32](rd io.Reader) *Mesh[T] {
 func baseMeshUnMarshal[T float64 | float32](rd io.Reader, v uint32) *BaseMesh[T] {
 	ms := &BaseMesh[T]{}
 	ms.Materials = MtlsUnMarshal(rd, v)
-	ms.Nodes = MeshNodesUnMarshal(rd)
+	ms.Nodes = MeshNodesUnMarshal[T](rd)
 	if v == V4 {
 		readLittleByte(rd, &ms.Code)
 	}
@@ -789,7 +788,7 @@ func MeshInstanceNodesUnMarshal[T float64 | float32](rd io.Reader, v uint32) []*
 	readLittleByte(rd, &size)
 	nds := make([]*InstanceMesh[T], size)
 	for i := range nds {
-		nds[i] = MeshInstanceNodeUnMarshal(rd, v)
+		nds[i] = MeshInstanceNodeUnMarshal[T](rd, v)
 	}
 	return nds
 }
@@ -798,9 +797,9 @@ func MeshInstanceNodeUnMarshal[T float64 | float32](rd io.Reader, v uint32) *Ins
 	inst := &InstanceMesh[T]{}
 	var size uint32
 	readLittleByte(rd, &size)
-	inst.Transfors = make([]*dmat.T, size)
+	inst.Transfors = make([]*mat4.Mat[T], size)
 	for i := range inst.Transfors {
-		mt := &dmat.T{}
+		mt := &mat4.Mat[T]{}
 		readLittleByte(rd, &mt[0])
 		readLittleByte(rd, &mt[1])
 		readLittleByte(rd, &mt[2])
@@ -822,7 +821,7 @@ func MeshInstanceNodeUnMarshal[T float64 | float32](rd io.Reader, v uint32) *Ins
 
 	inst.BBox = &[6]float64{}
 	readLittleByte(rd, inst.BBox)
-	inst.Mesh = baseMeshUnMarshal(rd, v)
+	inst.Mesh = baseMeshUnMarshal[T](rd, v)
 	readLittleByte(rd, &inst.Hash)
 	return inst
 }
@@ -833,7 +832,7 @@ func MeshReadFrom[T float64 | float32](path string) (*Mesh[T], error) {
 		return nil, e
 	}
 	defer f.Close()
-	return MeshUnMarshal(f), nil
+	return MeshUnMarshal[T](f), nil
 }
 
 func MeshWriteTo[T float64 | float32](path string, ms *Mesh[T]) error {

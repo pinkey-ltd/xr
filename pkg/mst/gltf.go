@@ -8,8 +8,8 @@ import (
 
 	"github.com/qmuntal/gltf/ext/specular"
 
-	mat4d "github.com/pinkey-ltd/go3d/float64/mat4"
 	"github.com/qmuntal/gltf"
+	"pinkey.ltd/xr/pkg/go3d/mat4"
 )
 
 const GLTF_VERSION = "2.0"
@@ -25,7 +25,7 @@ func MstToGltf[T float64 | float32](msts []*Mesh[T]) (*gltf.Document, error) {
 	return doc, nil
 }
 
-func MstToGltfWithOutline(msts []*Mesh) (*gltf.Document, error) {
+func MstToGltfWithOutline[T float64 | float32](msts []*Mesh[T]) (*gltf.Document, error) {
 	doc := CreateDoc()
 	for _, mst := range msts {
 		e := BuildGltf(doc, mst, true, true)
@@ -117,7 +117,7 @@ type buildContext struct {
 	bvNorm  int
 }
 
-func buildMeshBuffer(ctx *buildContext, buffer *gltf.Buffer, bufferViews []*gltf.BufferView, nd *MeshNode) []*gltf.BufferView {
+func buildMeshBuffer[T float64 | float32](ctx *buildContext, buffer *gltf.Buffer, bufferViews []*gltf.BufferView, nd *MeshNode[T]) []*gltf.BufferView {
 	var bt []byte
 	buf := bytes.NewBuffer(bt)
 	ctx.bvIndex = len(bufferViews)
@@ -213,7 +213,7 @@ func buildOutline[T float64 | float32](ctx *buildContext, accessors []*gltf.Acce
 		ps := &gltf.Primitive{}
 		ps.Material = &mtlId
 		if ps.Attributes == nil {
-			ps.Attributes = make(gltf.Attribute)
+			ps.Attributes = make(gltf.PrimitiveAttributes)
 		}
 		index := i + idx
 		ps.Indices = &index
@@ -249,7 +249,7 @@ func buildOutline[T float64 | float32](ctx *buildContext, accessors []*gltf.Acce
 	return mesh, accessors
 }
 
-func buildMesh(ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode) (*gltf.Mesh, []*gltf.Accessor) {
+func buildMesh[T float64 | float32](ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode[T]) (*gltf.Mesh, []*gltf.Accessor) {
 	mesh := &gltf.Mesh{}
 	aftIndices := len(nd.FaceGroup)
 	idx := len(accessors)
@@ -268,7 +268,7 @@ func buildMesh(ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode) (*gl
 		ps := &gltf.Primitive{}
 		ps.Material = &mtl_id
 		if ps.Attributes == nil {
-			ps.Attributes = make(gltf.Attribute)
+			ps.Attributes = make(gltf.PrimitiveAttributes)
 		}
 		index := i + idx
 		ps.Indices = &index
@@ -329,7 +329,7 @@ func buildMesh(ctx *buildContext, accessors []*gltf.Accessor, nd *MeshNode) (*gl
 	return mesh, accessors
 }
 
-func buildGltf[T float64 | float32](doc *gltf.Document, mh *BaseMesh[T], trans []*mat4d.T, exportOutline bool, gpu_instance bool) error {
+func buildGltf[T float64 | float32](doc *gltf.Document, mh *BaseMesh[T], trans []*mat4.Mat[T], exportOutline bool, gpu_instance bool) error {
 	ctx := &buildContext{}
 	ctx.mtlSize = len(doc.Materials)
 
@@ -359,7 +359,7 @@ func buildGltf[T float64 | float32](doc *gltf.Document, mh *BaseMesh[T], trans [
 				buildInstance(doc, l, trans)
 			} else {
 				for _, mt := range trans {
-					position, quat, scale := mat4d.Decompose(mt)
+					position, quat, scale := mat4.Decompose(mt)
 					nd := gltf.Node{
 						Mesh:        &l,
 						Translation: [3]float64{float64(float32(position[0])), float64(float32(position[1])), float64(float32(position[2]))},
@@ -374,7 +374,7 @@ func buildGltf[T float64 | float32](doc *gltf.Document, mh *BaseMesh[T], trans [
 
 	}
 
-	err := fillMaterials(doc, mh.Materials)
+	err := fillMaterials[T](doc, mh.Materials)
 	if err != nil {
 		return err
 	}
@@ -382,13 +382,13 @@ func buildGltf[T float64 | float32](doc *gltf.Document, mh *BaseMesh[T], trans [
 	return nil
 }
 
-func buildInstance(doc *gltf.Document, l int, trans []*mat4d.T) {
+func buildInstance[T float64 | float32](doc *gltf.Document, l int, trans []*mat4.Mat[T]) {
 	bvIdx := len(doc.BufferViews)
 	accInx := len(doc.Accessors)
 	buf := bytes.NewBuffer([]byte{})
 	startBytte := doc.Buffers[0].ByteLength
 	for i, mt := range trans {
-		position, quat, scale := mat4d.Decompose(mt)
+		position, quat, scale := mat4.Decompose(mt)
 		pos := [3]float32{float32(position[0]), float32(position[1]), float32(position[2])}
 		rot := [4]float32{float32(quat[0]), float32(quat[1]), float32(quat[2]), float32(quat[3])}
 		scl := [3]float32{float32(scale[0]), float32(scale[1]), float32(scale[2])}
@@ -485,7 +485,7 @@ func buildTextureBuffer(doc *gltf.Document, buffer *gltf.Buffer, texture *Textur
 	return tx, nil
 }
 
-func fillMaterials(doc *gltf.Document, mts []MeshMaterial) error {
+func fillMaterials[T float64 | float32](doc *gltf.Document, mts []MeshMaterial) error {
 	texMap := make(map[int]int)
 	useExtension := false
 	for i := range mts {
@@ -499,7 +499,7 @@ func fillMaterials(doc *gltf.Document, mts []MeshMaterial) error {
 		switch ml := mtl.(type) {
 		case *BaseMaterial:
 			cl = &[4]float64{float64(float32(ml.Color[0]) / 255), float64(float32(ml.Color[1]) / 255), float64(float32(ml.Color[2]) / 255), float64(1 - float32(ml.Transparency))}
-		case *PbrMaterial:
+		case *PbrMaterial[T]:
 			cl = &[4]float64{float64(float32(ml.Color[0]) / 255), float64(float32(ml.Color[1]) / 255), float64(float32(ml.Color[2]) / 255), float64(1 - float32(ml.Transparency))}
 			mc := float64(ml.Metallic)
 			gm.PBRMetallicRoughness.MetallicFactor = &mc

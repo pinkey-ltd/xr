@@ -1,4 +1,4 @@
-package bezier2
+package cbezier2
 
 import (
 	"testing"

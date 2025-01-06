@@ -2,27 +2,27 @@ package mst
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"image"
 	"image/color"
 	"image/jpeg"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	proj "github.com/flywave/go-proj"
-	"github.com/pinkey-ltd/go3d/float64/vec3"
-	fvec3 "github.com/pinkey-ltd/go3d/vec3"
+	"pinkey.ltd/xr/pkg/go3d/vec3"
 )
 
 func TestGltf3(t *testing.T) {
 	f, _ := os.Open("./tests/aa74a4e312afeae291f11dabcb5098d3.mst")
-	mh := MeshUnMarshal(f)
+	mh := MeshUnMarshal[float64](f)
 	mh.InstanceNode = nil
 	doc := CreateDoc()
 	BuildGltf(doc, mh, false, false)
 	bt, _ := GetGltfBinary(doc, 8)
-	ioutil.WriteFile("./tests/aa74a4e312afeae291f11dabcb5098d3.mst.glb", bt, os.ModePerm)
+	err := os.WriteFile("./tests/aa74a4e312afeae291f11dabcb5098d3.mst.glb", bt, 0644)
+	assert.Nil(t, err)
 }
 
 func MstToObj(path, destName string) {
@@ -38,7 +38,7 @@ func MstToObj(path, destName string) {
 
 	uvTmp := "vt %f %f \n"
 
-	ms, _ := MeshReadFrom(path)
+	ms, _ := MeshReadFrom[float64](path)
 	fl, _ := os.Create(fmt.Sprintf("%s/%s_convert.obj", dir, destName))
 	mtlTex, _ := os.Create(fmt.Sprintf("%s/%s_convert.mtl", dir, destName))
 	fl.Write([]byte(fmt.Sprintf("mtllib %s_convert.mtl \n", destName)))
@@ -152,9 +152,9 @@ func MstToObj(path, destName string) {
 }
 
 func TestVec(t *testing.T) {
-	world := &vec3.T{-2389250.4338499242, 4518270.200871248, 3802675.424745363}
-	head := &vec3.T{4.771371435839683, -0.753607839345932, 3.867249683942646}
-	p := &vec3.T{4.802855, -0.753608, 3.828406}
+	world := &vec3.Vec[float64]{-2389250.4338499242, 4518270.200871248, 3802675.424745363}
+	head := &vec3.Vec[float64]{4.771371435839683, -0.753607839345932, 3.867249683942646}
+	p := &vec3.Vec[float64]{4.802855, -0.753608, 3.828406}
 	fmt.Println(p.Add(world).Length())
 	world.Add(head)
 	x, y, z, _ := proj.Ecef2Lonlat(p[0], p[1], p[2])
@@ -162,7 +162,7 @@ func TestVec(t *testing.T) {
 }
 
 func TestPipe(t *testing.T) {
-	pos := []*fvec3.T{
+	pos := []*vec3.Vec[float64]{
 		{-45.6055285647, 197.900406907, 631.169545605},
 		{-55.3296683, 217.775199322, 601.643433287},
 		{-57.99762254, 223.04394682, 593.7597909383},
@@ -170,7 +170,7 @@ func TestPipe(t *testing.T) {
 	lines := []string{"/home/hj/workspace/GISCore/build/temp/mst/yanshi/ys_zq_mdb/line/1.mst", "/home/hj/workspace/GISCore/build/temp/mst/yanshi/ys_zq_mdb/line/2.mst", "/home/hj/workspace/GISCore/build/temp/mst/yanshi/ys_zq_mdb/line/3.mst"}
 	lines2 := []string{"tests/0.mst", "tests/1.mst", "tests/2.mst"}
 	for i := 0; i < 3; i++ {
-		ms, _ := MeshReadFrom(lines[i])
+		ms, _ := MeshReadFrom[float64](lines[i])
 		for _, nd := range ms.Nodes {
 			for k := range nd.Vertices {
 				nd.Vertices[k].Add(pos[i])
@@ -184,9 +184,11 @@ func TestPipe(t *testing.T) {
 func TestMst2Gltf(t *testing.T) {
 	f, _ := os.Open("./tests/test1.mst")
 	defer f.Close()
-	mh := MeshUnMarshal(f)
+	mh := MeshUnMarshal[float64](f)
 	doc := CreateDoc()
 	BuildGltf(doc, mh, false, true)
 	bt, _ := GetGltfBinary(doc, 8)
-	ioutil.WriteFile("tests/test1.glb", bt, os.ModePerm)
+
+	err := os.WriteFile("tests/test1.glb", bt, 0644)
+	assert.Nil(t, err)
 }

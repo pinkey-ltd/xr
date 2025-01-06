@@ -1,6 +1,6 @@
-// Package bezier2 contains functions for 2D cubic Bezier splines.
+// Package cbezier2 contains functions for 2D cubic Bezier splines.
 // See: http://en.wikipedia.org/wiki/B%C3%A9zier_curve
-package bezier2
+package cbezier2
 
 import (
 	"fmt"
@@ -88,7 +88,7 @@ func Tangent[T float64 | float32](p0, p1, p2, p3 *vec2.Vec[T], t T) vec2.Vec[T] 
 
 	if result[0] == 0 && result[1] == 0 {
 		fmt.Printf("zero tangent!  p0=%v, p1=%v, p2=%v, p3=%v, t=%v\n", p0, p1, p2, p3, t)
-		panic("zero tangent of bezier2")
+		panic("zero tangent of cbezier2")
 	}
 
 	return result
