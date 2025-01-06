@@ -138,6 +138,19 @@ func (mat *Mat[T]) Muled(f T) Mat[T] {
 	return result
 }
 
+// MultMatrix multiplies this matrix with the given matrix m and saves the result in this matrix.
+func (mat *Mat[T]) MultMatrix(m *Mat[T]) *Mat[T] {
+	// iterate over the rows of mat
+	for i := range mat {
+		row := vec4.Vec[T]{mat[0][i], mat[1][i], mat[2][i], mat[3][i]}
+		mat[0][i] = vec4.Dot4(&row, &m[0])
+		mat[1][i] = vec4.Dot4(&row, &m[1])
+		mat[2][i] = vec4.Dot4(&row, &m[2])
+		mat[3][i] = vec4.Dot4(&row, &m[3])
+	}
+	return mat
+}
+
 // Trace returns the trace value for the matrix.
 func (mat *Mat[T]) Trace() T {
 	return mat[0][0] + mat[1][1] + mat[2][2] + mat[3][3]

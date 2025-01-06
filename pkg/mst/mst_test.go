@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	proj "github.com/flywave/go-proj"
+	//proj "github.com/flywave/go-proj"
 	"pinkey.ltd/xr/pkg/go3d/vec3"
 )
 
@@ -151,15 +151,15 @@ func MstToObj(path, destName string) {
 	}
 }
 
-func TestVec(t *testing.T) {
-	world := &vec3.Vec[float64]{-2389250.4338499242, 4518270.200871248, 3802675.424745363}
-	head := &vec3.Vec[float64]{4.771371435839683, -0.753607839345932, 3.867249683942646}
-	p := &vec3.Vec[float64]{4.802855, -0.753608, 3.828406}
-	fmt.Println(p.Add(world).Length())
-	world.Add(head)
-	x, y, z, _ := proj.Ecef2Lonlat(p[0], p[1], p[2])
-	fmt.Println(x, y, z)
-}
+//func TestVec(t *testing.T) {
+//	world := &vec3.Vec[float64]{-2389250.4338499242, 4518270.200871248, 3802675.424745363}
+//	head := &vec3.Vec[float64]{4.771371435839683, -0.753607839345932, 3.867249683942646}
+//	p := &vec3.Vec[float64]{4.802855, -0.753608, 3.828406}
+//	fmt.Println(p.Add(world).Length())
+//	world.Add(head)
+//	x, y, z, _ := proj.Ecef2Lonlat(p[0], p[1], p[2])
+//	fmt.Println(x, y, z)
+//}
 
 func TestPipe(t *testing.T) {
 	pos := []*vec3.Vec[float64]{
