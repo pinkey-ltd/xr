@@ -16,7 +16,6 @@ import (
 // var (
 // 	// Zero holds a zero matrix.
 // 	Zero = T{}
-
 // 	// Ident holds an ident matrix.
 // 	Ident = T{
 // 		vec3.T{1, 0, 0},
@@ -25,10 +24,10 @@ import (
 // 	}
 // )
 
-// T represents a 3x3 matrix.
+// Mat represents a 3x3 matrix.
 type Mat[T float64 | float32] [3]vec3.Vec[T]
 
-// From copies a T from a generic.T implementation.
+// From copies a Mat3 from a go3d.T implementation.
 func From[T float64 | float32](other go3d.T[T]) Mat[T] {
 	r := Mat[T]{
 		vec3.Vec[T]{1, 0, 0},
@@ -413,22 +412,22 @@ func (mat *Mat[T]) Transposed() Mat[T] {
 }
 
 // Adjugate computes the adjugate of this matrix and returns mat
-func (matrix *Mat[T]) Adjugate() *Mat[T] {
-	mat := *matrix
+func (mat *Mat[T]) Adjugate() *Mat[T] {
+	m := *mat
 
-	matrix[0][0] = +(mat[1][1]*mat[2][2] - mat[1][2]*mat[2][1])
-	matrix[0][1] = -(mat[0][1]*mat[2][2] - mat[0][2]*mat[2][1])
-	matrix[0][2] = +(mat[0][1]*mat[1][2] - mat[0][2]*mat[1][1])
+	mat[0][0] = +(m[1][1]*m[2][2] - m[1][2]*m[2][1])
+	mat[0][1] = -(m[0][1]*m[2][2] - m[0][2]*m[2][1])
+	mat[0][2] = +(m[0][1]*m[1][2] - m[0][2]*m[1][1])
 
-	matrix[1][0] = -(mat[1][0]*mat[2][2] - mat[1][2]*mat[2][0])
-	matrix[1][1] = +(mat[0][0]*mat[2][2] - mat[0][2]*mat[2][0])
-	matrix[1][2] = -(mat[0][0]*mat[1][2] - mat[0][2]*mat[1][0])
+	mat[1][0] = -(m[1][0]*m[2][2] - m[1][2]*m[2][0])
+	mat[1][1] = +(m[0][0]*m[2][2] - m[0][2]*m[2][0])
+	mat[1][2] = -(m[0][0]*m[1][2] - m[0][2]*m[1][0])
 
-	matrix[2][0] = +(mat[1][0]*mat[2][1] - mat[1][1]*mat[2][0])
-	matrix[2][1] = -(mat[0][0]*mat[2][1] - mat[0][1]*mat[2][0])
-	matrix[2][2] = +(mat[0][0]*mat[1][1] - mat[0][1]*mat[1][0])
+	mat[2][0] = +(m[1][0]*m[2][1] - m[1][1]*m[2][0])
+	mat[2][1] = -(m[0][0]*m[2][1] - m[0][1]*m[2][0])
+	mat[2][2] = +(m[0][0]*m[1][1] - m[0][1]*m[1][0])
 
-	return matrix
+	return mat
 }
 
 // Adjugated returns an adjugated copy of the matrix.

@@ -4,9 +4,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/flywave/go3d/mat2"
-	"github.com/flywave/go3d/vec2"
 	"github.com/stretchr/testify/assert"
+
+	"pinkey.ltd/xr/pkg/go3d/mat2"
+	"pinkey.ltd/xr/pkg/go3d/vec2"
 	"pinkey.ltd/xr/pkg/go3d/vec3"
 )
 
@@ -19,10 +20,21 @@ func TestMat3From(t *testing.T) {
 	}
 
 	// 使用 From 函数复制矩阵
-	copiedMat := From(&mat)
+	copiedMat := From[float64](&mat)
 
 	// 检查复制的矩阵是否与原始矩阵相同
 	assert.Equal(t, mat, copiedMat, "From should correctly copy the matrix")
+	//// 创建一个 4x4 矩阵
+	//mat4x4 := mat4.Mat[float64]{
+	//	vec4.Vec[float64]{1, 2, 3, 0},
+	//	vec4.Vec[float64]{4, 5, 6, 0},
+	//	vec4.Vec[float64]{7, 8, 9, 0},
+	//	vec4.Vec[float64]{0, 0, 0, 0},
+	//}
+	//// 使用 From 函数复制矩阵
+	//copiedMat4 := From[float64](&mat4x4)
+	//
+	//assert.Equal(t, mat, copiedMat4, "From should correctly copy the matrix")
 }
 
 func TestMat3Scale(t *testing.T) {
@@ -267,7 +279,11 @@ func TestT_Transpose(t *testing.T) {
 }
 
 func TestDeterminant_2(t *testing.T) {
-	detTwo := Ident
+	detTwo := Mat[float64]{
+		vec3.Vec[float64]{1, 0, 0},
+		vec3.Vec[float64]{0, 1, 0},
+		vec3.Vec[float64]{0, 0, 1},
+	}
 	detTwo[0][0] = 2
 	if det := detTwo.Determinant(); det != 2 {
 		t.Errorf("Wrong determinant: %f", det)
@@ -275,71 +291,77 @@ func TestDeterminant_2(t *testing.T) {
 }
 
 func TestDeterminant_3(t *testing.T) {
-	scale2 := Ident.Scaled(2)
+	ident := Mat[float64]{
+		vec3.Vec[float64]{1, 0, 0},
+		vec3.Vec[float64]{0, 1, 0},
+		vec3.Vec[float64]{0, 0, 1},
+	}
+	scale2 := ident.Scaled(2)
+
 	if det := scale2.Determinant(); det != 2*2*2*1 {
 		t.Errorf("Wrong determinant: %f", det)
 	}
 }
 
 func TestDeterminant_4(t *testing.T) {
-	row1changed, _ := Parse("3 0 0   2 2 0   1 0 2")
+	row1changed, _ := Parse[float64]("3 0 0   2 2 0   1 0 2")
 	if det := row1changed.Determinant(); det != 12 {
 		t.Errorf("Wrong determinant: %f", det)
 	}
 }
 
 func TestDeterminant_5(t *testing.T) {
-	row12changed, _ := Parse("3 1 0   2 5 0   1 6 2")
+	row12changed, _ := Parse[float64]("3 1 0   2 5 0   1 6 2")
 	if det := row12changed.Determinant(); det != 26 {
 		t.Errorf("Wrong determinant: %f", det)
 	}
 }
 
 func TestDeterminant_7(t *testing.T) {
-	randomMatrix, err := Parse("0.43685 0.81673 0.63721   0.16600 0.40608 0.53479   0.37328 0.36436 0.56356")
+	randomMatrix, err := Parse[float64]("0.43685 0.81673 0.63721   0.16600 0.40608 0.53479   0.37328 0.36436 0.56356")
 	randomMatrix.Transpose()
 	if err != nil {
 		t.Errorf("Could not parse random matrix: %v", err)
 	}
-	if det := randomMatrix.Determinant(); PracticallyEquals(det, 0.043437) {
-		t.Errorf("Wrong determinant for random sub 3x3 matrix: %f", det)
-	}
-}
 
-func PracticallyEquals(value1 float64, value2 float64) bool {
-	return math.Abs(value1-value2) > EPSILON
+	assert.InDelta(t, 0.043437, randomMatrix.Determinant(), 1e-4)
 }
 
 func TestDeterminant_6(t *testing.T) {
-	row123changed := row123Changed
+	row123changed, _ := Parse[float64]("3 1 0.5   2 5 2   1 6 7")
 	if det := row123changed.Determinant(); det != 60.500 {
 		t.Errorf("Wrong determinant for 3x3 matrix: %f", det)
 	}
 }
 
 func TestDeterminant_1(t *testing.T) {
-	detId := Ident.Determinant()
+	ident := Mat[float64]{
+		vec3.Vec[float64]{1, 0, 0},
+		vec3.Vec[float64]{0, 1, 0},
+		vec3.Vec[float64]{0, 0, 1},
+	}
+	detId := ident.Determinant()
 	if detId != 1 {
 		t.Errorf("Wrong determinant for identity matrix: %f", detId)
 	}
 }
 
 func TestMaskedBlock(t *testing.T) {
-	m := row123Changed
-	blockedExpected := mat2.T{vec2.T{5, 2}, vec2.T{6, 7}}
+	m, _ := Parse[float64]("3 1 0.5   2 5 2   1 6 7")
+	blockedExpected := mat2.Mat[float64]{vec2.Vec[float64]{5, 2}, vec2.Vec[float64]{6, 7}}
 	if blocked := m.maskedBlock(0, 0); *blocked != blockedExpected {
 		t.Errorf("Did not block 0,0 correctly: %#v", blocked)
 	}
 }
 
 func TestAdjugate(t *testing.T) {
-	adj := row123Changed
+	adj, _ := Parse[float64]("3 1 0.5   2 5 2   1 6 7")
 
 	// Computed in octave:
-	adjExpected := T{
-		vec3.T{23, -4, -0.5},
-		vec3.T{-12, 20.5, -5},
-		vec3.T{7, -17, 13},
+	adjExpected := Mat[float64]{
+		vec3.Vec[float64]{23, -4, -0.5},
+		vec3.Vec[float64]{-12, 20.5, -5},
+		vec3.Vec[float64]{7, -17, 13},
 	}
 
 	adj.Adjugate()
@@ -351,16 +373,16 @@ func TestAdjugate(t *testing.T) {
 
 func TestAdjugated(t *testing.T) {
 	sqrt2 := math.Sqrt(2)
-	A := T{
-		vec3.T{1, 0, -1},
-		vec3.T{0, sqrt2, 0},
-		vec3.T{1, 0, 1},
+	A := Mat[float64]{
+		vec3.Vec[float64]{1, 0, -1},
+		vec3.Vec[float64]{0, sqrt2, 0},
+		vec3.Vec[float64]{1, 0, 1},
 	}
 
-	expectedAdjugated := T{
-		vec3.T{1.4142135623730951, -0, 1.4142135623730951},
-		vec3.T{-0, 2, -0},
-		vec3.T{-1.4142135623730951, -0, 1.4142135623730951},
+	expectedAdjugated := Mat[float64]{
+		vec3.Vec[float64]{1.4142135623730951, -0, 1.4142135623730951},
+		vec3.Vec[float64]{-0, 2, -0},
+		vec3.Vec[float64]{-1.4142135623730951, -0, 1.4142135623730951},
 	}
 
 	adjA := A.Adjugated()
@@ -371,14 +393,14 @@ func TestAdjugated(t *testing.T) {
 }
 
 func TestInvert_ok(t *testing.T) {
-	inv := invertableMatrix1
+	inv := Mat[float64]{vec3.Vec[float64]{4, -2, 3}, vec3.Vec[float64]{8, -3, 5}, vec3.Vec[float64]{7, -2, 4}}
 	_, err := inv.Invert()
 
 	if err != nil {
 		t.Error("Inverse not computed correctly", err)
 	}
 
-	invExpected := invertedMatrix1
+	invExpected := Mat[float64]{vec3.Vec[float64]{-2, 2, -1}, vec3.Vec[float64]{3, -5, 4}, vec3.Vec[float64]{5, -6, 4}}
 	if inv != invExpected {
 		t.Errorf("Inverse not computed correctly: %#v", inv)
 	}
@@ -386,16 +408,16 @@ func TestInvert_ok(t *testing.T) {
 
 func TestInvert_ok2(t *testing.T) {
 	sqrt2 := math.Sqrt(2)
-	A := T{
-		vec3.T{1, 0, -1},
-		vec3.T{0, sqrt2, 0},
-		vec3.T{1, 0, 1},
+	A := Mat[float64]{
+		vec3.Vec[float64]{1, 0, -1},
+		vec3.Vec[float64]{0, sqrt2, 0},
+		vec3.Vec[float64]{1, 0, 1},
 	}
 
-	expectedInverted := T{
-		vec3.T{0.5, 0, 0.5},
-		vec3.T{0, 0.7071067811865475, 0},
-		vec3.T{-0.5, 0, 0.5},
+	expectedInverted := Mat[float64]{
+		vec3.Vec[float64]{0.5, 0, 0.5},
+		vec3.Vec[float64]{0, 0.7071067811865475, 0},
+		vec3.Vec[float64]{-0.5, 0, 0.5},
 	}
 
 	invA, err := A.Inverted()
@@ -409,7 +431,7 @@ func TestInvert_ok2(t *testing.T) {
 }
 
 func TestInvert_nok_1(t *testing.T) {
-	inv := nonInvertableMatrix1
+	inv := Mat[float64]{vec3.Vec[float64]{1, 1, 1}, vec3.Vec[float64]{1, 1, 1}, vec3.Vec[float64]{1, 1, 1}}
 	_, err := inv.Inverted()
 	if err == nil {
 		t.Error("Inverse should not be possible", err)
@@ -417,7 +439,7 @@ func TestInvert_nok_1(t *testing.T) {
 }
 
 func TestInvert_nok_2(t *testing.T) {
-	inv := nonInvertableMatrix2
+	inv := Mat[float64]{vec3.Vec[float64]{1, 1, 1}, vec3.Vec[float64]{1, 0, 1}, vec3.Vec[float64]{1, 1, 1}}
 	_, err := inv.Inverted()
 	if err == nil {
 		t.Error("Inverse should not be possible", err)
@@ -425,9 +447,17 @@ func TestInvert_nok_2(t *testing.T) {
 }
 
 func BenchmarkAssignMul(b *testing.B) {
-	m1 := testMatrix1
-	m2 := testMatrix2
-	var mMult T
+	m1 := Mat[float64]{
+		vec3.Vec[float64]{0.38016528, -0.0661157, -0.008264462},
+		vec3.Vec[float64]{-0.19834709, 0.33884296, -0.08264463},
+		vec3.Vec[float64]{0.11570247, -0.28099173, 0.21487603},
+	}
+	m2 := Mat[float64]{
+		vec3.Vec[float64]{23, -4, -0.5},
+		vec3.Vec[float64]{-12, 20.5, -5},
+		vec3.Vec[float64]{7, -17, 13},
+	}
+	var mMult Mat[float64]
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		mMult.AssignMul(&m1, &m2)
