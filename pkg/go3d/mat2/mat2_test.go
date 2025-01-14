@@ -189,6 +189,25 @@ func TestMat2Get(t *testing.T) {
 	}
 }
 
+func TestMat2Set(t *testing.T) {
+	// 初始化一个 2x2 矩阵
+	mat := Mat[float64]{
+		vec2.Vec[float64]{1, 0},
+		vec2.Vec[float64]{0, 1},
+	}
+
+	// 设置矩阵中的一个值
+	col, row, newValue := 0, 1, 5.0
+	mat.Set(col, row, newValue)
+
+	// 验证设置后的值是否正确
+	expectedMat := Mat[float64]{
+		vec2.Vec[float64]{1, 5},
+		vec2.Vec[float64]{0, 1},
+	}
+	assert.Equal(t, mat, expectedMat)
+}
+
 func TestMat2IsZero(t *testing.T) {
 	zero := Mat[float64]{vec2.Vec[float64]{0, 0}, vec2.Vec[float64]{0, 0}}
 	nonZero := Mat[float64]{vec2.Vec[float64]{1, 0}, vec2.Vec[float64]{0, 1}}

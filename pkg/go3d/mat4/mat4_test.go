@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMat4_String(t *testing.T) {
+func TestMat4String(t *testing.T) {
 	m := Mat[float64]{
 		{1, 2, 3, 4},
 		{5, 6, 7, 8},
@@ -21,21 +21,56 @@ func TestMat4_String(t *testing.T) {
 	assert.Equal(t, expected, m.String())
 }
 
-func TestMat4_RowsColsSize(t *testing.T) {
+func TestMat4RowsColsSize(t *testing.T) {
 	m := Mat[float64]{}
 	assert.Equal(t, 4, m.Rows())
 	assert.Equal(t, 4, m.Cols())
 	assert.Equal(t, 16, m.Size())
 }
 
-func TestMat4_IsZero(t *testing.T) {
+func TestMat4IsZero(t *testing.T) {
 	var zero Mat[float64]
 	nonZero := Mat[float64]{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}
 	assert.True(t, zero.IsZero())
 	assert.False(t, nonZero.IsZero())
 }
 
-func TestMat4_Scale(t *testing.T) {
+func TestMat4Set(t *testing.T) {
+	// 初始化一个4x4矩阵
+	m := Mat[float64]{
+		vec4.Vec[float64]{1, 0, 0, 0},
+		vec4.Vec[float64]{0, 1, 0, 0},
+		vec4.Vec[float64]{0, 0, 1, 0},
+		vec4.Vec[float64]{0, 0, 0, 1},
+	}
+
+	// 定义测试用例
+	testCases := []struct {
+		col      int
+		row      int
+		value    float64
+		expected Mat[float64]
+	}{
+		{0, 0, 5, Mat[float64]{{5, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}},
+		{1, 1, -1, Mat[float64]{{5, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}},
+		{2, 2, 7.5, Mat[float64]{{5, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 7.5, 0}, {0, 0, 0, 1}}},
+		{3, 3, 100, Mat[float64]{{5, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 7.5, 0}, {0, 0, 0, 100}}},
+	}
+
+	// 遍历并执行测试用例
+	for _, tc := range testCases {
+		// 调用 Set 方法
+		m.Set(tc.col, tc.row, tc.value)
+
+		// 检查设置后的矩阵是否与预期相符
+		//if m != tc.expected {
+		//	t.Errorf("Set(%d, %d, %v): expected %v, got %v", tc.col, tc.row, tc.value, tc.expected, m)
+		//}
+		assert.Equal(t, tc.expected, m)
+	}
+}
+
+func TestMat4Scale(t *testing.T) {
 	m := &Mat[float64]{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}
 	scaleFactor := 2.0
 	m.Scale(scaleFactor)
@@ -43,7 +78,7 @@ func TestMat4_Scale(t *testing.T) {
 	assert.Equal(t, expected, *m)
 }
 
-func TestMat4_Scaled(t *testing.T) {
+func TestMat4Scaled(t *testing.T) {
 	m := Mat[float64]{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}
 	scaleFactor := 2.0
 	expected := Mat[float64]{{2, 4, 6, 8}, {10, 12, 14, 16}, {18, 20, 22, 24}, {26, 28, 30, 32}}
@@ -51,7 +86,7 @@ func TestMat4_Scaled(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestMat4_Mul(t *testing.T) {
+func TestMat4Mul(t *testing.T) {
 	m := &Mat[float64]{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}
 	factor := 2.0
 	m.Mul(factor)
@@ -59,7 +94,7 @@ func TestMat4_Mul(t *testing.T) {
 	assert.Equal(t, expected, *m)
 }
 
-func TestMat4_Muled(t *testing.T) {
+func TestMat4Muled(t *testing.T) {
 	m := Mat[float64]{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}
 	factor := 2.0
 	expected := Mat[float64]{{2, 4, 6, 8}, {10, 12, 14, 16}, {18, 20, 22, 24}, {26, 28, 30, 32}}
@@ -67,13 +102,13 @@ func TestMat4_Muled(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestMat4_Trace(t *testing.T) {
+func TestMat4Trace(t *testing.T) {
 	m := Mat[float64]{{1, 0, 0, 0}, {0, 2, 0, 0}, {0, 0, 3, 0}, {0, 0, 0, 4}}
 	trace := m.Trace()
 	assert.Equal(t, 10.0, trace)
 }
 
-func TestMat4_Trace3(t *testing.T) {
+func TestMat4Trace3(t *testing.T) {
 	m := Mat[float64]{{1, 0, 0, 0}, {0, 2, 0, 0}, {0, 0, 3, 0}, {0, 0, 0, 4}}
 	trace3 := m.Trace3()
 	assert.Equal(t, 6.0, trace3)
@@ -295,7 +330,7 @@ func BenchmarkTransformVec4(b *testing.B) {
 	}
 }
 
-func (mat *Mat[T]) TransformVec4_PassByValue(v vec4.Vec[T]) (r vec4.Vec[T]) {
+func (mat *Mat[T]) TransformVec4PassByValue(v vec4.Vec[T]) (r vec4.Vec[T]) {
 	// Use intermediate variables to not alter further computations.
 	x := mat[0][0]*v[0] + mat[1][0]*v[1] + mat[2][0]*v[2] + mat[3][0]*v[3]
 	y := mat[0][1]*v[0] + mat[1][1]*v[1] + mat[2][1]*v[2] + mat[3][1]*v[3]
@@ -307,7 +342,7 @@ func (mat *Mat[T]) TransformVec4_PassByValue(v vec4.Vec[T]) (r vec4.Vec[T]) {
 	return r
 }
 
-func Vec4Add_PassByValue[T float64 | float32](a, b vec4.Vec[T]) vec4.Vec[T] {
+func Vec4AddPassByValue[T float64 | float32](a, b vec4.Vec[T]) vec4.Vec[T] {
 	if a[3] == b[3] {
 		return vec4.Vec[T]{a[0] + b[0], a[1] + b[1], a[2] + b[2], 1}
 	} else {
@@ -360,9 +395,9 @@ func BenchmarkMulAddVec4_PassByValue(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		v := vec4.Vec[float64]{1, 1.5, 2, 2.5}
-		m1.TransformVec4_PassByValue(v)
-		m2.TransformVec4_PassByValue(v)
-		v = Vec4Add_PassByValue(v, v1)
-		v = Vec4Add_PassByValue(v, v1)
+		m1.TransformVec4PassByValue(v)
+		m2.TransformVec4PassByValue(v)
+		v = Vec4AddPassByValue(v, v1)
+		v = Vec4AddPassByValue(v, v1)
 	}
 }

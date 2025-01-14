@@ -24,17 +24,36 @@ func TestMat3From(t *testing.T) {
 
 	// 检查复制的矩阵是否与原始矩阵相同
 	assert.Equal(t, mat, copiedMat, "From should correctly copy the matrix")
-	//// 创建一个 4x4 矩阵
-	//mat4x4 := mat4.Mat[float64]{
-	//	vec4.Vec[float64]{1, 2, 3, 0},
-	//	vec4.Vec[float64]{4, 5, 6, 0},
-	//	vec4.Vec[float64]{7, 8, 9, 0},
-	//	vec4.Vec[float64]{0, 0, 0, 0},
-	//}
-	//// 使用 From 函数复制矩阵
-	//copiedMat4 := From[float64](&mat4x4)
-	//
-	//assert.Equal(t, mat, copiedMat4, "From should correctly copy the matrix")
+}
+
+func TestMat3Set(t *testing.T) {
+	// 初始化一个矩阵
+	m := Mat[float64]{
+		vec3.Vec[float64]{1, 0, 0},
+		vec3.Vec[float64]{0, 1, 0},
+		vec3.Vec[float64]{0, 0, 1},
+	}
+
+	// 定义测试用例
+	testCases := []struct {
+		col      int
+		row      int
+		value    float64
+		expected Mat[float64]
+	}{
+		{0, 0, 5, Mat[float64]{{5, 0, 0}, {0, 1, 0}, {0, 0, 1}}},
+		{1, 1, -1, Mat[float64]{{5, 0, 0}, {0, -1, 0}, {0, 0, 1}}},
+		{2, 2, 7.5, Mat[float64]{{5, 0, 0}, {0, -1, 0}, {0, 0, 7.5}}},
+	}
+
+	// 遍历并执行测试用例
+	for _, tc := range testCases {
+		// 调用 Set 方法
+		m.Set(tc.col, tc.row, tc.value)
+
+		// 检查设置后的矩阵是否与预期相符
+		assert.Equal(t, tc.expected, m)
+	}
 }
 
 func TestMat3Scale(t *testing.T) {

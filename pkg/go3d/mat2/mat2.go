@@ -96,6 +96,11 @@ func (mat *Mat[T]) Get(col, row int) T {
 	return mat[col][row]
 }
 
+// Set assigns the given value to the specified element at the given column and row indices within the matrix.
+func (mat *Mat[T]) Set(col, row int, value T) {
+	mat[col][row] = value
+}
+
 // IsZero checks if all elements of the matrix are zero.
 func (mat *Mat[T]) IsZero() bool {
 	zero := Mat[T]{
