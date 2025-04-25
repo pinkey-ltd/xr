@@ -1,11 +1,11 @@
 module pinkey.ltd/xr
 
-go 1.23.4
+go 1.24.2
 
 require (
 	github.com/qmuntal/gltf v0.28.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/image v0.23.0
+	golang.org/x/image v0.26.0
 )
 
 require (
